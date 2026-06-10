@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#FFFBF0" />
+<title>The Great Duck Escape</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --cream: #FFFBF0;
+    --grass: #7BC67E;
+    --water: #64B5F6;
+    --lane: #E8D5B0;
+    --accent: #FFD93D;
+    --dark: #2D2D2D;
+    --red: #E53935;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    font-family: 'Nunito', system-ui, sans-serif;
+    color: var(--dark);
+    background: var(--cream);
+    overscroll-behavior: none;
+    touch-action: manipulation;
+  }
+  body {
+    background: linear-gradient(180deg, #FFFBF0 0%, #FFF3D6 60%, #CDE9FF 100%);
+    display: flex; flex-direction: column; min-height: 100dvh;
+  }
+  h1, h2, h3, .display { font-family: 'Fredoka One', cursive; font-weight: 400; }
+  .screen {
+    flex: 1; display: none; flex-direction: column; align-items: center;
+    justify-content: center; padding: 24px; text-align: center; gap: 18px;
+  }
+  .screen.active { display: flex; }
+
+  .logo { font-size: 30px; line-height: 1.1; color: var(--dark); }
+  .logo span { color: var(--accent); -webkit-text-stroke: 1px #E0A800; }
+  .subtle { color: #8a7f63; font-weight: 700; }
+
+  /* duck */
+  .duck-wrap { display: inline-block; }
+  .duck-bob { animation: bob 1.6s ease-in-out infinite; }
+  @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+  /* registration */
+  .card {
+    background: #fff; border-radius: 28px; padding: 26px 22px; width: 100%;
+    max-width: 380px; box-shadow: 0 12px 30px rgba(120,90,20,.15);
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  label { font-weight: 800; text-align: left; font-size: 16px; }
+  input[type=text] {
+    font-family: 'Nunito'; font-weight: 700; font-size: 20px;
+    padding: 14px 16px; border: 3px solid #f0e2c0; border-radius: 16px;
+    width: 100%; outline: none; background: #fffdf6;
+  }
+  input[type=text]:focus { border-color: var(--accent); }
+  .swatches { display: flex; gap: 12px; justify-content: space-between; flex-wrap: wrap; }
+  .swatch {
+    width: 46px; height: 46px; border-radius: 50%; cursor: pointer;
+    border: 4px solid #fff; box-shadow: 0 0 0 2px #e7dcc0; transition: transform .12s;
+  }
+  .swatch.selected { transform: scale(1.18); box-shadow: 0 0 0 4px var(--dark); }
+  .btn {
+    font-family: 'Fredoka One'; font-size: 22px; color: var(--dark);
+    background: var(--accent); border: none; border-radius: 18px; padding: 16px;
+    cursor: pointer; box-shadow: 0 6px 0 #d9a400; transition: transform .08s, box-shadow .08s;
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #d9a400; }
+  .btn[disabled] { opacity: .5; box-shadow: none; }
+
+  /* tapping */
+  #screen-tapping { padding: 16px; justify-content: flex-start; gap: 10px; }
+  .timerbar-track {
+    width: 100%; max-width: 420px; height: 18px; background: #eadcb8;
+    border-radius: 12px; overflow: hidden; margin-top: 6px;
+  }
+  .timerbar-fill {
+    height: 100%; width: 100%; background: linear-gradient(90deg, var(--grass), #4fae64);
+    border-radius: 12px; transform-origin: left;
+  }
+  .tapcount { font-size: 30px; }
+  .tap-btn {
+    margin-top: auto; margin-bottom: auto;
+    width: min(80vw, 320px); height: min(80vw, 320px); min-width: 200px; min-height: 200px;
+    border-radius: 50%; border: none; cursor: pointer;
+    font-family: 'Fredoka One'; font-size: 42px; color: #fff;
+    background: radial-gradient(circle at 35% 30%, #ff8a65, var(--red));
+    box-shadow: 0 12px 0 #a81f1c, 0 18px 30px rgba(229,57,53,.4);
+    transition: transform .05s, box-shadow .05s; user-select: none;
+  }
+  .tap-btn:active { transform: scale(.95) translateY(6px); box-shadow: 0 4px 0 #a81f1c; }
+
+  .squish { animation: squish .09s ease-out; }
+  @keyframes squish {
+    0% { transform: scale(1,1); }
+    40% { transform: scale(1.12,.7); }
+    70% { transform: scale(.95,1.1); }
+    100% { transform: scale(1,1); }
+  }
+
+  /* countdown */
+  .count-num { font-size: 130px; color: var(--red); animation: pop .9s ease-out; }
+  @keyframes pop { 0% { transform: scale(.4); opacity: 0; } 50% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); } }
+
+  .spinner {
+    width: 54px; height: 54px; border: 7px solid #f0e2c0;
+    border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .big { font-size: 26px; }
+  .huge { font-size: 40px; }
+  .pill {
+    background: #fff; border-radius: 999px; padding: 8px 18px; font-weight: 800;
+    box-shadow: 0 6px 16px rgba(120,90,20,.12);
+  }
+</style>
+</head>
+<body>
+
+  <!-- REGISTRATION -->
+  <section id="screen-register" class="screen active">
+    <div class="logo">🦆 THE GREAT<br><span>DUCK ESCAPE</span></div>
+    <div class="card">
+      <div>
+        <label for="name">Your name</label>
+        <input id="name" type="text" placeholder="e.g. Sir Quacks" maxlength="20" autocomplete="off" />
+      </div>
+      <div>
+        <label>Pick your duck</label>
+        <div class="swatches" id="swatches"></div>
+      </div>
+      <div id="preview" style="min-height:90px;display:flex;align-items:center;justify-content:center;"></div>
+      <button class="btn" id="joinBtn">Join the Pond</button>
+      <div class="subtle" id="joinErr" style="display:none;color:var(--red)"></div>
+    </div>
+  </section>
+
+  <!-- WAITING -->
+  <section id="screen-wait" class="screen">
+    <div class="logo">You're in the pond!</div>
+    <div class="duck-bob" id="waitDuck"></div>
+    <div class="huge display" id="waitName"></div>
+    <div class="pill">Waiting for the host to start… 🦆</div>
+    <div class="subtle">Keep this screen open!</div>
+  </section>
+
+  <!-- COUNTDOWN -->
+  <section id="screen-countdown" class="screen">
+    <div class="display count-num" id="countNum">3</div>
+  </section>
+
+  <!-- TAPPING -->
+  <section id="screen-tapping" class="screen">
+    <div class="timerbar-track"><div class="timerbar-fill" id="timerFill"></div></div>
+    <div id="tapDuck" style="margin-top:8px"></div>
+    <div class="tapcount display" id="tapCount">0 taps!</div>
+    <button class="tap-btn" id="tapBtn">TAP!</button>
+  </section>
+
+  <!-- SUBMITTING -->
+  <section id="screen-submitting" class="screen">
+    <div class="spinner"></div>
+    <div class="big display">Submitting your score…</div>
+    <div class="subtle">Hang tight, hold the pond line.</div>
+  </section>
+
+  <!-- DONE -->
+  <section id="screen-done" class="screen">
+    <div class="duck-bob" id="doneDuck"></div>
+    <div class="huge display">🦆 You escaped!</div>
+    <div class="big" id="doneScore"></div>
+    <div class="pill">Look up at the big screen for the race! 👀</div>
+  </section>
+
+  <!-- BLOCKED -->
+  <section id="screen-blocked" class="screen">
+    <div class="logo">🦆</div>
+    <div class="huge display">Game in progress</div>
+    <div class="pill">Hang tight — you can join the next round.</div>
+    <button class="btn" id="retryBtn">Try again</button>
+  </section>
+
+<script>
+// ---------- shared helpers ----------
+const COLORS = ['#FFD700', '#4FC3F7', '#F48FB1', '#CE93D8', '#81C784', '#FFB74D'];
+
+function shade(hex, pct) {
+  const n = parseInt(hex.slice(1), 16);
+  let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  r = Math.round(Math.min(255, Math.max(0, r * (1 + pct))));
+  g = Math.round(Math.min(255, Math.max(0, g * (1 + pct))));
+  b = Math.round(Math.min(255, Math.max(0, b * (1 + pct))));
+  return '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('');
+}
+
+// Reusable inline duck. expression: 'normal' | 'happy' | 'squished'
+function duckSVG(color, size, expression) {
+  expression = expression || 'normal';
+  const dark = shade(color, -0.22);
+  const light = shade(color, 0.32);
+  let eyes;
+  if (expression === 'squished') {
+    eyes = `<path d="M34 31 q6 4 12 0" stroke="#2D2D2D" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <path d="M54 31 q6 4 12 0" stroke="#2D2D2D" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  } else if (expression === 'happy') {
+    eyes = `<path d="M34 33 q6 -7 12 0" stroke="#2D2D2D" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <path d="M54 33 q6 -7 12 0" stroke="#2D2D2D" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <circle cx="30" cy="44" r="4.5" fill="#F48FB1" opacity=".55"/>
+            <circle cx="70" cy="44" r="4.5" fill="#F48FB1" opacity=".55"/>`;
+  } else {
+    eyes = `<circle cx="40" cy="32" r="6.5" fill="#fff"/><circle cx="60" cy="32" r="6.5" fill="#fff"/>
+            <circle cx="41" cy="33" r="3.4" fill="#2D2D2D"/><circle cx="61" cy="33" r="3.4" fill="#2D2D2D"/>
+            <circle cx="39.4" cy="30.6" r="1.4" fill="#fff"/><circle cx="59.4" cy="30.6" r="1.4" fill="#fff"/>`;
+  }
+  return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="50" cy="90" rx="30" ry="6" fill="#000" opacity=".08"/>
+    <ellipse cx="20" cy="64" rx="9" ry="17" fill="${dark}"/>
+    <ellipse cx="80" cy="64" rx="9" ry="17" fill="${dark}"/>
+    <ellipse cx="50" cy="68" rx="34" ry="30" fill="${color}"/>
+    <ellipse cx="50" cy="76" rx="22" ry="16" fill="${light}"/>
+    <circle cx="50" cy="37" r="24" fill="${color}"/>
+    <ellipse cx="50" cy="46" rx="12" ry="6.5" fill="#FF9800"/>
+    <path d="M40 46 q10 6 20 0" stroke="#E07B00" stroke-width="1.6" fill="none"/>
+    ${eyes}
+  </svg>`;
+}
+
+// ---------- screen routing ----------
+function show(id) {
+  document.querySelectorAll('.screen').forEach((s) => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ---------- state ----------
+const params = new URLSearchParams(location.search);
+let selectedColor = COLORS[0];
+let playerId = null;
+let myName = '';
+let myColor = COLORS[0];
+let tapCount = 0;
+let tapTimer = null;
+let submitted = false;
+
+// ---------- registration UI ----------
+const swatchBox = document.getElementById('swatches');
+const preview = document.getElementById('preview');
+COLORS.forEach((c, i) => {
+  const el = document.createElement('div');
+  el.className = 'swatch' + (i === 0 ? ' selected' : '');
+  el.style.background = c;
+  el.onclick = () => {
+    selectedColor = c;
+    document.querySelectorAll('.swatch').forEach((s) => s.classList.remove('selected'));
+    el.classList.add('selected');
+    renderPreview();
+  };
+  swatchBox.appendChild(el);
+});
+function renderPreview() { preview.innerHTML = `<div class="duck-bob">${duckSVG(selectedColor, 80, 'happy')}</div>`; }
+renderPreview();
+
+const joinBtn = document.getElementById('joinBtn');
+const joinErr = document.getElementById('joinErr');
+joinBtn.onclick = async () => {
+  const name = document.getElementById('name').value.trim();
+  if (!name) { document.getElementById('name').focus(); return; }
+  joinBtn.disabled = true;
+  joinErr.style.display = 'none';
+  try {
+    const res = await fetch('/api/join', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, color: selectedColor }),
+    });
+    const data = await res.json();
+    if (!data.success) {
+      if (data.error === 'in_progress') { show('screen-blocked'); }
+      else { joinErr.textContent = 'Could not join. Try again.'; joinErr.style.display = 'block'; }
+      joinBtn.disabled = false;
+      return;
+    }
+    playerId = data.playerId;
+    myName = name;
+    myColor = selectedColor;
+    document.getElementById('waitDuck').innerHTML = duckSVG(myColor, 130, 'happy');
+    document.getElementById('waitName').textContent = myName;
+    show('screen-wait');
+  } catch (e) {
+    joinErr.textContent = 'Network error. Try again.';
+    joinErr.style.display = 'block';
+    joinBtn.disabled = false;
+  }
+};
+
+document.getElementById('retryBtn').onclick = () => show('screen-register');
+
+// ---------- countdown ----------
+function runCountdown() {
+  show('screen-countdown');
+  const seq = ['3', '2', '1', 'QUACK! 🦆'];
+  let i = 0;
+  const el = document.getElementById('countNum');
+  const tick = () => {
+    el.textContent = seq[i];
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = 'pop .9s ease-out';
+    beep(i < 3 ? 520 + i * 80 : 760, i < 3 ? 0.12 : 0.35);
+    i++;
+    if (i < seq.length) setTimeout(tick, 1000);
+  };
+  tick();
+}
+
+// ---------- tapping ----------
+function startTapping(duration) {
+  tapCount = 0;
+  submitted = false;
+  document.getElementById('tapDuck').innerHTML = duckSVG(myColor, 120, 'normal');
+  document.getElementById('tapCount').textContent = '0 taps!';
+  const tapBtn = document.getElementById('tapBtn');
+  const fill = document.getElementById('timerFill');
+  tapBtn.disabled = false;
+  show('screen-tapping');
+
+  const start = Date.now();
+  fill.style.transition = 'none';
+  fill.style.transform = 'scaleX(1)';
+
+  const onTap = (e) => {
+    e.preventDefault();
+    if (submitted) return;
+    tapCount++;
+    document.getElementById('tapCount').textContent = tapCount + ' taps!';
+    const d = document.getElementById('tapDuck').firstElementChild;
+    if (d) { d.classList.remove('squish'); void d.offsetWidth; d.classList.add('squish'); }
+    if (navigator.vibrate) navigator.vibrate(12);
+  };
+  tapBtn.addEventListener('touchstart', onTap, { passive: false });
+  tapBtn.addEventListener('mousedown', onTap);
+
+  clearInterval(tapTimer);
+  tapTimer = setInterval(() => {
+    const elapsed = Date.now() - start;
+    const frac = Math.max(0, 1 - elapsed / duration);
+    fill.style.transform = 'scaleX(' + frac + ')';
+    if (elapsed >= duration) {
+      clearInterval(tapTimer);
+      tapBtn.disabled = true;
+      tapBtn.removeEventListener('touchstart', onTap);
+      tapBtn.removeEventListener('mousedown', onTap);
+      finishTapping();
+    }
+  }, 50);
+}
+
+async function finishTapping() {
+  show('screen-submitting');
+  const finalCount = tapCount;
+  submitted = true;
+  // Retry submission a few times — connectivity may be flaky on corporate Wi-Fi.
+  for (let attempt = 0; attempt < 4; attempt++) {
+    try {
+      const res = await fetch('/api/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId, tapCount: finalCount }),
+      });
+      const data = await res.json();
+      if (data.success) break;
+    } catch (e) { /* retry */ }
+    await new Promise((r) => setTimeout(r, 700));
+  }
+  document.getElementById('doneDuck').innerHTML = duckSVG(myColor, 130, 'happy');
+  document.getElementById('doneScore').textContent = finalCount + ' taps!';
+  show('screen-done');
+}
+
+// ---------- audio (optional, generated) ----------
+let audioCtx = null;
+function beep(freq, dur) {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.frequency.value = freq;
+    o.type = 'triangle';
+    o.connect(g); g.connect(audioCtx.destination);
+    g.gain.setValueAtTime(0.18, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    o.start(); o.stop(audioCtx.currentTime + dur);
+  } catch (e) {}
+}
+
+// ---------- websocket ----------
+let ws;
+function connect() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${proto}://${location.host}/ws?role=player`);
+  ws.onmessage = (ev) => {
+    const m = JSON.parse(ev.data);
+    if (m.type === 'phase_change') {
+      if (m.phase === 'countdown') {
+        if (playerId) runCountdown();
+      } else if (m.phase === 'tapping') {
+        if (playerId) startTapping(m.duration || 10000);
+      } else if (m.phase === 'lobby') {
+        // game reset — bounce everyone back to registration
+        playerId = null;
+        show('screen-register');
+        joinBtn.disabled = false;
+      }
+    } else if (m.type === 'reset') {
+      playerId = null;
+      show('screen-register');
+      joinBtn.disabled = false;
+    }
+  };
+  ws.onclose = () => setTimeout(connect, 1500); // auto-reconnect
+}
+connect();
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "the-great-duck-escape",
+  "version": "1.0.0",
+  "description": "The Great Duck Escape — a browser-based party game for live townhall events.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.18.0"
+  }
+}
