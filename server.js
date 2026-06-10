@@ -264,7 +264,7 @@ function lanAddresses() {
   return out;
 }
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log('\n🦆  THE GREAT DUCK ESCAPE is running!\n');
   console.log(`   Room code: ${game.roomCode}\n`);
   console.log('   Open these on the same Wi-Fi network:');
