@@ -153,6 +153,26 @@
   .reveal-controls { position:absolute; bottom: 24px; right: 28px; z-index: 40; display:flex; gap: 14px; }
 
   .host-controls { position: absolute; bottom: 18px; left: 28px; z-index: 40; display:flex; gap: 14px; }
+
+  /* ---- leaderboard ---- */
+  .leaderboard {
+    display: none; flex-direction: column; gap: 6px; width: 100%; max-width: 900px;
+    max-height: 260px; overflow-y: auto; margin-top: 10px;
+  }
+  .leaderboard.active { display: flex; }
+  .lb-row {
+    display: flex; align-items: center; gap: 14px;
+    background: rgba(255,255,255,.88); border-radius: 14px; padding: 8px 16px;
+    animation: rise .5s ease-out both;
+  }
+  .lb-row.lb-winner { background: rgba(255,217,61,.92); border: 3px solid #d9a400; }
+  .lb-rank { font-family: 'Fredoka One'; font-size: 26px; width: 42px; text-align: center; flex-shrink: 0; }
+  .lb-rank.gold   { color: #B8860B; }
+  .lb-rank.silver { color: #888; }
+  .lb-rank.bronze { color: #a05a2c; }
+  .lb-name { font-weight: 800; font-size: 22px; flex: 1; text-align: left; }
+  .lb-taps { font-weight: 800; font-size: 20px; color: #6b5e3f; flex-shrink: 0; }
+  .lb-badge { font-size: 18px; font-weight: 800; background: var(--red); color: #fff; border-radius: 999px; padding: 2px 12px; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -208,6 +228,7 @@
         <div id="bannerText" class="banner-text display"></div>
         <div id="revealLines"></div>
         <div class="hero-wrap" id="heroWrap"></div>
+        <div class="leaderboard" id="leaderboard"></div>
       </div>
     </div>
 
@@ -542,6 +563,29 @@ function showHeroes(losers) {
   setTimeout(() => confettiBurst(1), 700);
   setTimeout(() => confettiBurst(1), 1500);
   document.getElementById('resetBtn').style.display = 'inline-block';
+
+  // Full leaderboard — sorted fastest (most taps) to slowest
+  const loserIds = new Set(losers.map((l) => l.id));
+  const sorted = [...scores].sort((a, b) => b.tapCount - a.tapCount);
+  const lb = document.getElementById('leaderboard');
+  lb.innerHTML = '<div style="font-family:\'Fredoka One\';font-size:28px;text-align:center;margin-bottom:4px;">📊 Full Rankings</div>';
+  const rankSymbols = ['🥇', '🥈', '🥉'];
+  sorted.forEach((p, i) => {
+    const isWinner = loserIds.has(p.id);
+    const row = document.createElement('div');
+    row.className = 'lb-row' + (isWinner ? ' lb-winner' : '');
+    row.style.animationDelay = (i * 0.06) + 's';
+    const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    const rankDisplay = rankSymbols[i] || `#${i + 1}`;
+    row.innerHTML = `
+      <div class="lb-rank ${rankClass}">${rankDisplay}</div>
+      <div style="flex-shrink:0">${duckSVG(p.color, 36, 'happy')}</div>
+      <div class="lb-name">${escapeHtml(p.name)}</div>
+      <div class="lb-taps">${p.tapCount} taps</div>
+      ${isWinner ? '<div class="lb-badge">Organizer 👑</div>' : ''}`;
+    lb.appendChild(row);
+  });
+  lb.classList.add('active');
 }
 
 // ---------- confetti ----------
